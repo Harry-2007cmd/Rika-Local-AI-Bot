@@ -24,7 +24,7 @@ Commands inside the chat:
 
 | Command | What it does |
 |---|---|
-| `/voice` | Toggle voice input: press Enter, speak, press Enter again |
+| `/voice` | Toggle voice input: press Enter, speak, press Enter again. In voice mode say "text mode" to go back to typing, "goodbye" to quit |
 | `/mute` | Toggle spoken replies |
 | `/clear` | Reset the conversation |
 | `/think` | Toggle Qwen3 thinking mode |

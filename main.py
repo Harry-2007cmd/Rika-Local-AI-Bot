@@ -1,18 +1,36 @@
 """Rika - chat in the terminal, by text or by voice.
 
 Commands: /voice  toggle voice input (speak instead of typing)
+          In voice mode say "text mode" to go back to typing, "goodbye" to quit
           /mute   toggle spoken replies
           /clear  reset the conversation
           /think  toggle Qwen3 thinking mode
           /exit   quit
 """
+import os
 import re
 import sys
+
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
 import brain
 import config
 
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+|\n+")
+
+# Things you can say in voice mode (matched against the whole sentence).
+VOICE_OFF_PHRASES = {"text mode", "stop voice", "voice off", "exit voice mode", "stop listening"}
+QUIT_PHRASES = {"exit", "quit", "goodbye", "bye", "good bye"}
+
+
+def spoken_command(text):
+    """Return 'text', 'quit' or None for a transcribed sentence."""
+    t = re.sub(r"[^a-z ]", "", text.lower()).strip()
+    if t in VOICE_OFF_PHRASES:
+        return "text"
+    if t in QUIT_PHRASES:
+        return "quit"
+    return None
 
 
 def reply(client, history, thinking, speaker):
@@ -75,6 +93,13 @@ def main():
                 print("You (voice):")
                 user = listener.listen()
                 print(f"You said: {user}" if user else "(didn't catch anything)")
+                cmd = spoken_command(user)
+                if cmd == "text":
+                    voice_mode = False
+                    print("(voice input off, back to typing)")
+                    continue
+                if cmd == "quit":
+                    break
             else:
                 user = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
