@@ -1,6 +1,6 @@
 # Rika-Local-AI-Bot
 
-A fully local personal AI assistant (text now, voice and document search next). Runs on your own PC through Ollama, nothing leaves the machine.
+A fully local personal AI assistant (text and voice now, document search next). Runs on your own PC through Ollama, nothing leaves the machine.
 
 ## Setup (Windows)
 
@@ -9,6 +9,7 @@ cd "D:\Rika Bot"
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+python download_voice.py      # one time, downloads the Piper voice (~60 MB)
 ```
 
 Make sure Ollama is running and the model is installed (`ollama list` should show `qwen3:4b`).
@@ -19,14 +20,22 @@ Make sure Ollama is running and the model is installed (`ollama list` should sho
 python main.py
 ```
 
-Commands inside the chat: `/clear` resets the conversation, `/think` toggles Qwen3 thinking mode, `/exit` quits.
+Commands inside the chat:
 
-Settings (model, persona, history length) live in `config.py`.
+| Command | What it does |
+|---|---|
+| `/voice` | Toggle voice input: press Enter, speak, press Enter again |
+| `/mute` | Toggle spoken replies |
+| `/clear` | Reset the conversation |
+| `/think` | Toggle Qwen3 thinking mode |
+| `/exit` | Quit |
+
+Settings (model, persona, Whisper size, voice file) live in `config.py`.
 
 ## Roadmap
 
-1. Text chat loop (this milestone)
-2. Voice loop (faster-whisper + Piper)
+1. Text chat loop (done)
+2. Voice loop: faster-whisper in, Piper out (this milestone)
 3. Document / PDF search
 4. Tool calling (web search)
 5. Permissions and memory

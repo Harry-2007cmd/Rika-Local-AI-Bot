@@ -1,53 +1,82 @@
-"""Rika - terminal chat (Milestone 1).
+"""Rika - chat in the terminal, by text or by voice.
 
-Commands: /clear  reset the conversation
+Commands: /voice  toggle voice input (speak instead of typing)
+          /mute   toggle spoken replies
+          /clear  reset the conversation
           /think  toggle Qwen3 thinking mode
           /exit   quit
 """
+import re
 import sys
 
-import ollama
-
+import brain
 import config
 
-
-def build_messages(history):
-    """System prompt + the most recent turns."""
-    recent = history[-config.MAX_HISTORY_MESSAGES:]
-    return [{"role": "system", "content": config.SYSTEM_PROMPT}] + recent
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+|\n+")
 
 
-def stream_reply(client, history, thinking):
-    """Print the reply as it streams in and return the full text."""
-    stream = client.chat(
-        model=config.MODEL,
-        messages=build_messages(history),
-        stream=True,
-        think=thinking,
-        options={
-            "temperature": config.TEMPERATURE,
-            "num_ctx": config.CONTEXT_WINDOW,
-        },
-    )
-    parts = []
-    for chunk in stream:
-        text = chunk["message"]["content"]
-        if text:
-            print(text, end="", flush=True)
-            parts.append(text)
+def reply(client, history, thinking, speaker):
+    """Stream the reply to the screen and speak it sentence by sentence."""
+    full, buffer = [], ""
+    for text in brain.stream_chunks(client, history, thinking):
+        print(text, end="", flush=True)
+        full.append(text)
+        if speaker:
+            buffer += text
+            parts = SENTENCE_END.split(buffer)
+            for sentence in parts[:-1]:
+                speaker.say(sentence)
+            buffer = parts[-1]
     print()
-    return "".join(parts)
+    if speaker:
+        speaker.say(buffer)
+        speaker.wait()
+    return "".join(full)
+
+
+def load_speaker():
+    try:
+        from tts import Speaker
+
+        return Speaker()
+    except Exception as err:
+        print(f"(voice output unavailable: {err})")
+        return None
+
+
+def load_listener():
+    try:
+        from audio_io import Listener
+
+        return Listener()
+    except Exception as err:
+        print(f"(voice input unavailable: {err})")
+        return None
 
 
 def main():
-    client = ollama.Client(host=config.OLLAMA_HOST)
+    client = brain.make_client()
     thinking = config.THINKING
     history = []
+    listener = speaker = None
+    voice_mode = config.START_IN_VOICE_MODE
+    speak = config.SPEAK_REPLIES
 
-    print(f"{config.ASSISTANT_NAME} is ready ({config.MODEL}). Type /exit to quit.\n")
+    if speak or voice_mode:
+        speaker = load_speaker()
+    if voice_mode:
+        listener = load_listener()
+        voice_mode = listener is not None
+
+    print(f"{config.ASSISTANT_NAME} is ready ({config.MODEL}). Type /exit to quit, /voice to talk.\n")
     while True:
         try:
-            user = input("You: ").strip()
+            if voice_mode:
+                print("You (voice):")
+                user = listener.listen()
+                print(f"You said: {user}" if user else "(didn't catch anything)")
+            else:
+                user = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
             print()
             break
@@ -63,16 +92,28 @@ def main():
             thinking = not thinking
             print(f"(thinking mode {'on' if thinking else 'off'})")
             continue
+        if user == "/mute":
+            speak = not speak
+            if speak and speaker is None:
+                speaker = load_speaker()
+            print(f"(spoken replies {'on' if speak else 'off'})")
+            continue
+        if user == "/voice":
+            if listener is None:
+                listener = load_listener()
+            voice_mode = listener is not None and not voice_mode
+            print(f"(voice input {'on' if voice_mode else 'off'})")
+            continue
 
         history.append({"role": "user", "content": user})
         print(f"{config.ASSISTANT_NAME}: ", end="", flush=True)
         try:
-            reply = stream_reply(client, history, thinking)
-        except Exception as err:  # Ollama not running, model missing, etc.
+            text = reply(client, history, thinking, speaker if speak else None)
+        except Exception as err:
             history.pop()
             print(f"\n[error] {err}\nIs Ollama running and is '{config.MODEL}' installed?")
             continue
-        history.append({"role": "assistant", "content": reply})
+        history.append({"role": "assistant", "content": text})
 
     print("Bye!")
     return 0

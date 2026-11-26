@@ -19,3 +19,15 @@ SYSTEM_PROMPT = (
     "fully offline on the user's own computer. Keep answers short and clear, since "
     "they may be spoken aloud. If you do not know something, say so instead of guessing."
 )
+
+# --- Voice input (speech to text) ---
+START_IN_VOICE_MODE = False
+SAMPLE_RATE = 16000          # Hz, what Whisper expects
+WHISPER_MODEL = "small"      # "base" is faster, "small" is more accurate
+WHISPER_DEVICE = "cpu"       # "cpu" is the safe default; "cuda" needs CUDA/cuDNN libs
+WHISPER_COMPUTE = "int8"     # int8 on cpu, float16 on cuda
+WHISPER_LANGUAGE = "en"      # None = auto-detect
+
+# --- Voice output (text to speech, Piper) ---
+SPEAK_REPLIES = True
+PIPER_VOICE = "voices/en_US-amy-medium.onnx"   # run `python download_voice.py` once
