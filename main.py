@@ -12,6 +12,10 @@ import re
 import sys
 
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+# Keep downloaded speech models inside the project folder (D:) instead of C:\Users\...\.cache
+os.environ.setdefault(
+    "HF_HOME", os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", "huggingface")
+)
 
 import brain
 import config

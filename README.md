@@ -33,6 +33,9 @@ Commands inside the chat:
 
 Settings (model, persona, Whisper size, voice file) live in `config.py`.
 
+### Keeping downloads off the C: drive
+Speech models are stored in `D:\Rika Bot\models\huggingface` (git-ignored). To also keep pip's temporary files off C: while installing, use `pip install --no-cache-dir -r requirements-gpu.txt`.
+
 ### Better speech recognition
 The default is `large-v3-turbo` (about 1.6 GB, downloaded on first `/voice`). It uses your NVIDIA GPU if it can, otherwise the CPU. For GPU speed run `pip install -r requirements-gpu.txt`. If it is too slow or uses too much memory, set `WHISPER_MODEL = "small"` or `"medium"` in `config.py`.
 
