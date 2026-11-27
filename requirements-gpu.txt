@@ -1,0 +1,4 @@
+# Optional: lets faster-whisper use your NVIDIA GPU (much faster speech recognition).
+# Install with:  pip install -r requirements-gpu.txt
+nvidia-cublas-cu12
+nvidia-cudnn-cu12==9.*
