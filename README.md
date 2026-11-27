@@ -22,6 +22,7 @@ python main.py
 
 Commands inside the chat:
 
+
 | Command | What it does |
 |---|---|
 | `/voice` | Toggle voice input: press Enter, speak, press Enter again. In voice mode say "text mode" to go back to typing, "goodbye" to quit |
