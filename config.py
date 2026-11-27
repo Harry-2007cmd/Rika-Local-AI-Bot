@@ -4,6 +4,7 @@
 MODEL = "qwen3:4b"          # must match `ollama list`
 OLLAMA_HOST = "http://localhost:11434"
 THINKING = False            # Qwen3 "thinking" mode: off = fast replies (better for voice)
+NO_THINK_SWITCH = True      # also send Qwen3's /no_think switch when thinking is off
 
 # Generation options (kept modest for an RTX 3050 6 GB)
 TEMPERATURE = 0.7
@@ -23,10 +24,16 @@ SYSTEM_PROMPT = (
 # --- Voice input (speech to text) ---
 START_IN_VOICE_MODE = False
 SAMPLE_RATE = 16000          # Hz, what Whisper expects
-WHISPER_MODEL = "small"      # "base" is faster, "small" is more accurate
-WHISPER_DEVICE = "cpu"       # "cpu" is the safe default; "cuda" needs CUDA/cuDNN libs
-WHISPER_COMPUTE = "int8"     # int8 on cpu, float16 on cuda
+INPUT_DEVICE = None          # None = default microphone; or a device number from `python -m sounddevice`
+
+# Accuracy ladder (bigger = more accurate but slower / more memory):
+#   "small"  <  "medium"  <  "large-v3-turbo" (best balance)  <  "large-v3"
+WHISPER_MODEL = "large-v3-turbo"
+WHISPER_DEVICE = "auto"      # "auto" tries the GPU first and falls back to CPU; or "cpu" / "cuda"
 WHISPER_LANGUAGE = "en"      # None = auto-detect
+WHISPER_BEAM_SIZE = 5        # higher = more accurate, a little slower
+# Words Whisper often gets wrong; a short hint improves recognition of them.
+WHISPER_HINT = "Conversation with Rika, a personal AI assistant. Topics: Python, Ollama, database, PDF."
 
 # --- Voice output (text to speech, Piper) ---
 SPEAK_REPLIES = True

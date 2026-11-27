@@ -33,6 +33,9 @@ Commands inside the chat:
 
 Settings (model, persona, Whisper size, voice file) live in `config.py`.
 
+### Better speech recognition
+The default is `large-v3-turbo` (about 1.6 GB, downloaded on first `/voice`). It uses your NVIDIA GPU if it can, otherwise the CPU. For GPU speed run `pip install -r requirements-gpu.txt`. If it is too slow or uses too much memory, set `WHISPER_MODEL = "small"` or `"medium"` in `config.py`.
+
 ## Roadmap
 
 1. Text chat loop (done)
